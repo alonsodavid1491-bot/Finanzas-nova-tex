@@ -1,2 +1,2 @@
-# Finanzas-nova-tex
+# Finanzas-nova-tec
 Finanzas nova-tec
