@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Servicio Técnico y Variedades AyC - Control Financiero</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-main: #0f172a;
+            --card-bg: #1e293b;
+            --text-light: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --accent-blue: #3b82f6;
+        }
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-light);
+            font-family: system-ui, -apple-system, sans-serif;
+            padding-bottom: 50px;
+        }
+        .app-header {
+            background: #1e293b;
+            border-bottom: 1px solid #334155;
+            padding: 16px 20px;
+        }
+        .stat-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            border: 1px solid #334155;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.3);
+        }
+        .badge-cloud {
+            background-color: #064e3b;
+            color: #34d399;
+            font-weight: 600;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            border: 1px solid #059669;
+        }
+        .form-control, .form-select {
+            background-color: #0f172a;
+            border: 1px solid #334155;
+            color: #ffffff;
+            border-radius: 10px;
+        }
+        .form-control:focus, .form-select:focus {
+            background-color: #0f172a;
+            color: #ffffff;
+            border-color: var(--accent-green);
+            box-shadow: 0 0 0 0.25rem rgba(16, 185, 129, 0.25);
+        }
+        .table-dark-custom {
+            background-color: var(--card-bg);
+            color: var(--text-light);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .table-dark-custom th {
+            background-color: #334155;
+            color: var(--text-muted);
+            border: none;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+        .table-dark-custom td {
+            border-color: #334155;
+            vertical-align: middle;
+        }
+        .btn-custom-green {
+            background-color: var(--accent-green);
+            color: #ffffff;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+        }
+        .btn-custom-green:hover {
+            background-color: #059669;
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Encabezado -->
+    <div class="app-header d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex align-items-center gap-2">
+            <div class="bg-success p-2 rounded-3 text-white">
+                <i class="bi bi-tools fs-4"></i>
+            </div>
+            <div>
+                <h5 class="m-0 fw-bold">Servicio Técnico y Variedades AyC</h5>
+                <small class="text-secondary">Control Financiero</small>
+            </div>
+        </div>
+        <div>
+            <span id="status-badge" class="badge-cloud">
+                <i class="bi bi-cloud-check-fill me-1"></i>Sincronizado Cloud
+            </span>
+        </div>
+    </div>
+
+    <div class="container">
+        
+        <!-- Tarjetas Resumen -->
+        <div class="row g-3 mb-4">
+            <div class="col-12 col-md-4">
+                <div class="stat-card">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-secondary small fw-bold">INGRESOS TOTALES</span>
+                        <i class="bi bi-arrow-up-right-circle text-success fs-4"></i>
+                    </div>
+                    <h2 class="text-success fw-bold mt-2 mb-0" id="total-ingresos">₡0</h2>
+                    <small class="text-secondary" id="cant-ingresos">0 registros</small>
+                </div>
+            </div>
+            <div class="col-12 col-md-4">
+                <div class="stat-card">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-secondary small fw-bold">GASTOS TOTALES</span>
+                        <i class="bi bi-arrow-down-right-circle text-danger fs-4"></i>
+                    </div>
+                    <h2 class="text-danger fw-bold mt-2 mb-0" id="total-gastos">₡0</h2>
+                    <small class="text-secondary" id="cant-gastos">0 registros</small>
+                </div>
+            </div>
+            <div class="col-12 col-md-4">
+                <div class="stat-card">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="text-secondary small fw-bold">BALANCE / UTILIDAD</span>
+                        <i class="bi bi-wallet2 text-primary fs-4"></i>
+                    </div>
+                    <h2 class="text-primary fw-bold mt-2 mb-0" id="total-balance">₡0</h2>
+                    <small class="text-secondary" id="margen-utilidad">Margen: 0%</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Formulario e Historial -->
+        <div class="row g-4">
+            
+            <!-- Formulario de Registro -->
+            <div class="col-12 col-lg-5">
+                <div class="stat-card">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-plus-circle me-2 text-success"></i>Nuevo Registro</h5>
+                    <form id="finance-form">
+                        <div class="mb-3">
+                            <label class="form-label small text-secondary">Tipo de Movimiento</label>
+                            <select class="form-select" id="type" required>
+                                <option value="ingreso">Ingreso (+)</option>
+                                <option value="gasto">Gasto (-)</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small text-secondary">Categoría</label>
+                            <select class="form-select" id="category" required>
+                                <option value="Reparación Celular">Reparación Celular</option>
+                                <option value="Reparación Computadora">Reparación Computadora</option>
+                                <option value="Reparación Consola">Reparación Consola</option>
+                                <option value="Venta Accesorios / Variedades">Venta Accesorios / Variedades</option>
+                                <option value="Repuestos e Insumos">Repuestos e Insumos</option>
+                                <option value="Herramientas">Herramientas</option>
+                                <option value="Servicios Básicos / Varios">Servicios Básicos / Varios</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small text-secondary">Concepto / Descripción</label>
+                            <input type="text" class="form-control" id="concept" placeholder="Ej. Cambio de pantalla A12, Pega T7000..." required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small text-secondary">Monto en Colones (₡)</label>
+                            <input type="number" class="form-control" id="amount" placeholder="Ej. 25000" min="1" required>
+                        </div>
+                        <button type="submit" class="btn btn-custom-green w-100 py-2 mt-2">
+                            <i class="bi bi-cloud-upload me-2"></i>Guardar en Firebase
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Gráfico y Tabla -->
+            <div class="col-12 col-lg-7">
+                
+                <!-- Gráfico Resumen -->
+                <div class="stat-card mb-4">
+                    <h6 class="fw-bold text-secondary mb-3">Relación Ingresos vs Gastos</h6>
+                    <div style="height: 180px;">
+                        <canvas id="financeChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Tabla de Historial -->
+                <div class="stat-card">
+                    <h5 class="fw-bold mb-3"><i class="bi bi-clock-history me-2 text-primary"></i>Últimos Movimientos</h5>
+                    <div class="table-responsive">
+                        <table class="table table-dark-custom align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Categoría</th>
+                                    <th>Concepto</th>
+                                    <th class="text-end">Monto</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transactions-list">
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted py-3">Cargando datos desde Firebase...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Firebase SDK Modular 10.8.0 -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // Credenciales extraídas de tu consola de Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyAMzs_wMpzlIFWlns07XgSs6aat...",
+            authDomain: "finanzas-ayc.firebaseapp.com",
+            projectId: "finanzas-ayc",
+            storageBucket: "finanzas-ayc.firebasestorage.app",
+            messagingSenderId: "395342124525",
+            appId: "1:395342124525:web:a52d9b165be3fb..."
+        };
+
+        // Inicializar Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Referencia del Formulario y DOM
+        const form = document.getElementById('finance-form');
+        const list = document.getElementById('transactions-list');
+        const totalIngresosEl = document.getElementById('total-ingresos');
+        const totalGastosEl = document.getElementById('total-gastos');
+        const totalBalanceEl = document.getElementById('total-balance');
+        const cantIngresosEl = document.getElementById('cant-ingresos');
+        const cantGastosEl = document.getElementById('cant-gastos');
+        const margenUtilidadEl = document.getElementById('margen-utilidad');
+
+        // Configurar Chart.js
+        const ctx = document.getElementById('financeChart').getContext('2d');
+        let chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Ingresos', 'Gastos'],
+                datasets: [{
+                    data: [0, 0],
+                    backgroundColor: ['#10b981', '#ef4444'],
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } },
+                    x: { ticks: { color: '#94a3b8' }, grid: { display: false } }
+                }
+            }
+        });
+
+        // Formatear montos a colones costarricenses
+        const formatCRC = (amount) => {
+            return new Intl.NumberFormat('es-CR', { style: 'currency', currency: 'CRC', maximumFractionDigits: 0 }).format(amount);
+        };
+
+        // Guardar registro en Firestore
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const type = document.getElementById('type').value;
+            const category = document.getElementById('category').value;
+            const concept = document.getElementById('concept').value;
+            const amount = parseFloat(document.getElementById('amount').value);
+
+            try {
+                await addDoc(collection(db, "movimientos"), {
+                    type,
+                    category,
+                    concept,
+                    amount,
+                    createdAt: serverTimestamp()
+                });
+                form.reset();
+            } catch (error) {
+                console.error("Error al guardar en Firebase:", error);
+                alert("Error al conectar con la base de datos.");
+            }
+        });
+
+        // Escuchar datos en tiempo real de Firestore
+        const q = query(collection(db, "movimientos"), orderBy("createdAt", "desc"));
+        onSnapshot(q, (snapshot) => {
+            let totalIngresos = 0;
+            let totalGastos = 0;
+            let countIngresos = 0;
+            let countGastos = 0;
+
+            list.innerHTML = '';
+
+            if (snapshot.empty) {
+                list.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-3">No hay movimientos registrados.</td></tr>';
+            }
+
+            snapshot.forEach((doc) => {
+                const item = doc.data();
+                const isIngreso = item.type === 'ingreso';
+
+                if (isIngreso) {
+                    totalIngresos += item.amount;
+                    countIngresos++;
+                } else {
+                    totalGastos += item.amount;
+                    countGastos++;
+                }
+
+                const date = item.createdAt ? new Date(item.createdAt.seconds * 1000).toLocaleDateString('es-CR', { day: '2-digit', month: 'short' }) : 'Hoy';
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="text-secondary small">${date}</td>
+                    <td><span class="badge ${isIngreso ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'} rounded-pill">${item.category}</span></td>
+                    <td class="fw-medium">${item.concept}</td>
+                    <td class="text-end fw-bold ${isIngreso ? 'text-success' : 'text-danger'}">
+                        ${isIngreso ? '+' : '-'}${formatCRC(item.amount)}
+                    </td>
+                `;
+                list.appendChild(row);
+            });
+
+            // Actualizar Totales y Métricas
+            const balance = totalIngresos - totalGastos;
+            totalIngresosEl.textContent = formatCRC(totalIngresos);
+            totalGastosEl.textContent = formatCRC(totalGastos);
+            totalBalanceEl.textContent = formatCRC(balance);
+
+            cantIngresosEl.textContent = `${countIngresos} ingresos registrados`;
+            cantGastosEl.textContent = `${countGastos} gastos registrados`;
+
+            const margin = totalIngresos > 0 ? ((balance / totalIngresos) * 100).toFixed(1) : 0;
+            margenUtilidadEl.textContent = `Margen: ${margin}%`;
+
+            // Actualizar Gráfico
+            chart.data.datasets[0].data = [totalIngresos, totalGastos];
+            chart.update();
+        });
+    </script>
+</body>
+</html>
